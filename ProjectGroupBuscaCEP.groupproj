@@ -1,0 +1,36 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{5A59FBB2-7932-41FC-A017-F60D2ACE72E9}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="BuscaCEP.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="BuscaCEP">
+        <MSBuild Projects="BuscaCEP.dproj"/>
+    </Target>
+    <Target Name="BuscaCEP:Clean">
+        <MSBuild Projects="BuscaCEP.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="BuscaCEP:Make">
+        <MSBuild Projects="BuscaCEP.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="BuscaCEP"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="BuscaCEP:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="BuscaCEP:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
