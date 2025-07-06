@@ -16,5 +16,5 @@ A API permite a recuperação de informações como rua, bairro, cidade e estado
 - Consumo de WebService REST com suporte a JSON.
 - Tratamento de erros e respostas inválidas, garantindo robustez e uma experiência de uso mais segura.
 
-Autor: Rafael de Azevedo Lima, desonvovido com Embarcadero® Delphi 12 Version 29.0.52631.8427 .
+Autor: Rafael de Azevedo Lima, desenvolvido com Embarcadero® Delphi CE 12 Version 29.0.52631.8427.
 
