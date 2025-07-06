@@ -9,6 +9,7 @@ type
 
     function GetURI: string;
     function InternetConectada: Boolean;
+    function InternetErrorResponse: string;
 
     property URI : string read GetURI write SetURI;
   end;

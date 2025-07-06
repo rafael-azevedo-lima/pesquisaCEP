@@ -31,8 +31,7 @@ type
       procedure SetLogradouro(const Value: string);
       procedure SetLongitude(const Value: string);
       procedure ConsultaCEP(const Value: string);
-      procedure SemInternet;
-      procedure Erro404;
+      procedure ResponseErro404;
     public
       destructor Destroy; override;
       class function New: IControllerConsultaCEP;
@@ -56,70 +55,61 @@ uses
 
 procedure TModelConsultaCEP.ConsultaCEP(const Value: string);
 const
-  BASE_URI = 'https://brasilapi.com.br';
   BASE_URL = 'https://brasilapi.com.br/api/cep/v2/%s';
 var
-  Internet: IControllerInternet;
   HTTPClient: TNetHTTPClient;
   Response: IHTTPResponse;
   xCEP,JsonString: string;
   JsonObj, LocationObj, CoordinatesObj: TJSONObject;
 begin
-  if Length(Value) < 8 then
-      raise Exception.Create('CEP Possui 8 digitos!');
-  Internet := TModelInternet.New;
-  Internet.URI := BASE_URI;
-  if Internet.InternetConectada then
-  begin
-      HTTPClient := TNetHTTPClient.Create(nil);
+  if (Length(Value) < 8) then
+      raise Exception.Create('CEP deve possuir 8 digitos numéricos!');
+  HTTPClient := TNetHTTPClient.Create(nil);
+  try
       try
-          try
-              xCEP := Format(BASE_URL,[Value]);
-              Response  := HTTPClient.Get(xCEP);
-              case Response.StatusCode of
-                  200:
-                  begin
-                      JsonString := Response.ContentAsString(TEncoding.UTF8);
-                      JsonObj := TJSONObject.ParseJSONValue(JsonString) as TJSONObject;
-                      try
-                          if Assigned(JsonObj) then
+          xCEP := Format(BASE_URL,[Value]);
+          Response  := HTTPClient.Get(xCEP);
+          case Response.StatusCode of
+              200:
+              begin
+                  JsonString := Response.ContentAsString(TEncoding.UTF8);
+                  JsonObj := TJSONObject.ParseJSONValue(JsonString) as TJSONObject;
+                  try
+                      if Assigned(JsonObj) then
+                      begin
+                          Self.SetCEP(JsonObj.GetValue('cep').Value);
+                          Self.SetEstado(JsonObj.GetValue('state').Value);
+                          Self.SetCidade(JsonObj.GetValue('city').Value);
+                          if (JsonObj.GetValue('neighborhood').Value = 'null') then
+                              Self.SetBairro('Centro')
+                          else
+                              Self.SetBairro(JsonObj.GetValue('neighborhood').Value);
+                          if (JsonObj.GetValue('street').Value = 'null') then
+                              Self.SetLogradouro('')
+                          else
+                              Self.SetLogradouro(JsonObj.GetValue('street').Value);
+                          LocationObj := JsonObj.GetValue('location') as TJSONObject;
+                          CoordinatesObj := LocationObj.GetValue('coordinates') as TJSONObject;
+                          if Assigned(LocationObj) and Assigned(CoordinatesObj) then
                           begin
-                              Self.SetCEP(JsonObj.GetValue('cep').Value);
-                              Self.SetEstado(JsonObj.GetValue('state').Value);
-                              Self.SetCidade(JsonObj.GetValue('city').Value);
-                              if (JsonObj.GetValue('neighborhood').Value = 'null') then
-                                  Self.SetBairro('Centro')
-                              else
-                                  Self.SetBairro(JsonObj.GetValue('neighborhood').Value);
-                              if (JsonObj.GetValue('street').Value = 'null') then
-                                  Self.SetLogradouro('')
-                              else
-                                  Self.SetLogradouro(JsonObj.GetValue('street').Value);
-                              LocationObj := JsonObj.GetValue('location') as TJSONObject;
-                              CoordinatesObj := LocationObj.GetValue('coordinates') as TJSONObject;
-                              if Assigned(LocationObj) and Assigned(CoordinatesObj) then
-                              begin
-                                  Self.SetLongitude(CoordinatesObj.GetValue('longitude').Value);
-                                  Self.SetLatitude(CoordinatesObj.GetValue('latitude').Value);
-                              end;
+                              Self.SetLongitude(CoordinatesObj.GetValue('longitude').Value);
+                              Self.SetLatitude(CoordinatesObj.GetValue('latitude').Value);
                           end;
-                      finally
-                          JsonObj.Free;
                       end;
+                  finally
+                          JsonObj.Free;
                   end;
-                  404: Self.Erro404;
-              else
-                  Self.Erro404;
               end;
-          except On E: Exception do
-              Self.Erro404;
+              404: Self.ResponseErro404;
+              else
+                  Self.ResponseErro404;
           end;
-      finally
-          HTTPClient.Free;
+      except On E: Exception do
+          Self.ResponseErro404;
       end;
-  end
-  else
-      Self.SemInternet;
+  finally
+      HTTPClient.Free;
+  end;
 end;
 
 constructor TModelConsultaCEP.Create;
@@ -131,7 +121,7 @@ begin
   inherited;
 end;
 
-procedure TModelConsultaCEP.Erro404;
+procedure TModelConsultaCEP.ResponseErro404;
 const
   CODE_404 = 'Não encontrado!';
 begin
@@ -182,19 +172,6 @@ end;
 class function TModelConsultaCEP.New: IControllerConsultaCEP;
 begin
   Result := Self.Create;
-end;
-
-procedure TModelConsultaCEP.SemInternet;
-const
-  SEM_INTERNET = 'Não encontrado! (Verifique internet)';
-begin
-  Self.SetCEP(SEM_INTERNET);
-  Self.SetEstado(SEM_INTERNET);
-  Self.SetCidade(SEM_INTERNET);
-  Self.SetBairro(SEM_INTERNET);
-  Self.SetLogradouro(SEM_INTERNET);
-  Self.SetLongitude(SEM_INTERNET);
-  Self.SetLatitude(SEM_INTERNET);
 end;
 
 procedure TModelConsultaCEP.SetBairro(const Value: string);

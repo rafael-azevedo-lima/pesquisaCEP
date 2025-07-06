@@ -14,6 +14,7 @@ type
       procedure SetURI(const Value: string);
       function GetURI: string;
       function InternetConectada: Boolean;
+      function InternetErrorResponse: string;
     public
       destructor Destroy; override;
       class function New: IControllerInternet;
@@ -60,6 +61,11 @@ begin
   finally
       HTTP.Free;
   end;
+end;
+
+function TModelInternet.InternetErrorResponse: string;
+begin
+  Result := 'Internet limitada ou desconectada, por favor verifique!';
 end;
 
 class function TModelInternet.New: IControllerInternet;

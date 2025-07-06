@@ -54,16 +54,22 @@ uses
 
 procedure TfrmPrincipal.btnPesquisaCEPClick(Sender: TObject);
 begin
-  with Self.Interfaces.ConsultaCEP do
+  with Self.Interfaces do
   begin
-      ConsultaCEP(edtPesquisaCEp.Text);
-      edtCEP.Text         := CEP;
-      edtEstado.Text      := Estado;
-      edtCidade.Text      := Cidade;
-      edtBairro.Text      := Bairro;
-      edtLogradouro.Text  := Logradouro;
-      edtLatitude.Text    := Latitude;
-      edtLongitude.Text   := Longitude;
+      Internet.URI := 'https://brasilapi.com.br';
+      if Internet.InternetConectada then
+      begin
+          ConsultaCEP.ConsultaCEP(edtPesquisaCEp.Text);
+          edtCEP.Text         := ConsultaCEP.CEP;
+          edtEstado.Text      := ConsultaCEP.Estado;
+          edtCidade.Text      := ConsultaCEP.Cidade;
+          edtBairro.Text      := ConsultaCEP.Bairro;
+          edtLogradouro.Text  := ConsultaCEP.Logradouro;
+          edtLatitude.Text    := ConsultaCEP.Latitude;
+          edtLongitude.Text   := ConsultaCEP.Longitude;
+      end
+      else
+          raise Exception.Create(Internet.InternetErrorResponse);
   end;
 end;
 
